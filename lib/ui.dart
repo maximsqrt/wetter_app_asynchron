@@ -1,6 +1,6 @@
-// main.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:wetter_app_asynchron/background.dart';
 import 'package:wetter_app_asynchron/jsonString.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,8 +15,8 @@ class _WetterAppState extends State<WetterApp> {
   double latitude = 0.0;
   double longitude = 0.0;
   String time = '';
-  double temperature2m = 0.0;
-  double apparentTemperature = 0.0;
+  double temperature = 0.0;
+  double perceivedTemperature = 0.0;
   bool isDay = true;
   double precipitation = 0.0;
 
@@ -44,8 +44,8 @@ class _WetterAppState extends State<WetterApp> {
       latitude = jsonData['latitude'];
       longitude = jsonData['longitude'];
       time = jsonData['current']['time'];
-      temperature2m = jsonData['current']['temperature_2m'];
-      apparentTemperature = jsonData['current']['apparent_temperature'];
+      temperature = jsonData['current']['temperature_2m'];
+      perceivedTemperature = jsonData['current']['apparent_temperature'];
       isDay = jsonData['current']['is_day'] == 1;
       precipitation = jsonData['current']['precipitation'];
     });
@@ -59,29 +59,45 @@ class _WetterAppState extends State<WetterApp> {
           title: Text('Wetter-App'),
           backgroundColor: Colors.purple,
         ),
-        body: ListView(
-          padding: EdgeInsets.all(16.0),
+        body: Stack(
           children: [
-            Text('Latitude: $latitude'),
-            Text('Longitude: $longitude'),
-            Text('Time: $time'),
-            Text('Temperature 2m: $temperature2m'),
-            Text('Apparent Temperature: $apparentTemperature'),
-            Text('Is Day: $isDay'),
-            Text('Precipitation: $precipitation'),
-            ElevatedButton(
-              onPressed: () {
-                fetchData();
-              },
-              child: Text('Vorhersage aktualisieren'),
+            Column(
+              children: [
+                Expanded(
+                  child: ThermometerBackground(
+                    temperature: temperature,
+                    maxHeight: MediaQuery.of(context).size.height / 2,
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.all(16.0),
+                    children: [
+                      Text('Latitude: $latitude'),
+                      Text('Longitude: $longitude'),
+                      Text('Time: $time'),
+                      Text('Temperature 2m: $temperature'),
+                      Text('Apparent Temperature: $perceivedTemperature'),
+                      Text('Is Day: $isDay'),
+                      Text('Precipitation: $precipitation'),
+                      ElevatedButton(
+                        onPressed: () {
+                          fetchData();
+                        },
+                        child: Text('Vorhersage aktualisieren'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: MediaQuery.of(context).size.height - 100.0,
+              child: ThermometerBackground(temperature: temperature, maxHeight: 100.0),
             ),
           ],
         ),
       ),
     );
   }
-}
-
-void main() {
-  runApp(const WetterApp());
 }
